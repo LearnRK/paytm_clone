@@ -9,7 +9,7 @@ mongoose
 .catch((e) =>{console.log("connection to DB failed.")})
 
 // create schema
-const UserSchema = mongoose.Schema({
+const UserSchema = new mongoose.Schema({
     username:{
         type: String,
         required: true,

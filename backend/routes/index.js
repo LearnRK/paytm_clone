@@ -4,7 +4,7 @@ const accountRouter = require("./account");
 
 const router = express.Router();
 
-app.use("/user", userRouter);
-app.use("/account", accountRouter);
+router.use("/user", userRouter);
+router.use("/account", accountRouter);
 
 module.exports = router;
