@@ -19,13 +19,13 @@ const UserSchema = new mongoose.Schema({
         minLength: 3,
         maxLength: 30
     },
-    first_name:{
+    firstName:{
         type:String,
         required:true,
         trim: true,
         maxLength: 50
     },
-    last_name:{
+    lastName:{
         type:String,
         required:true,
         trim: true,
@@ -35,7 +35,7 @@ const UserSchema = new mongoose.Schema({
         type:String,
         required:false
     },
-    phone_number:{
+    phoneNumber:{
         type:Number,
         required:false
     },
