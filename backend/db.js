@@ -31,22 +31,11 @@ const UserSchema = new mongoose.Schema({
         trim: true,
         maxLength: 50
     },
-    email:{
-        type:String,
-        required:false
-    },
-    phoneNumber:{
-        type:Number,
-        required:false
-    },
     password:{
         type:String,
         required:true,
         minLength: 6
-    },
-    ammount:{
-        type:String,
-    },
+    }
 })
 
 // create a model of schema
