@@ -18,6 +18,7 @@ const signupSchema = zod.object({
 router.post("/signup",async (req, res) => {
     const body = req.body;
     // verify inputs with zod
+    console.log("starting zod");
     const {success} = signupSchema.safeParse(body);
     if(!success) {
         res.status(403).json({
@@ -36,8 +37,22 @@ router.post("/signup",async (req, res) => {
         })
     }    
     console.log("cleared username check");
-    //create user 
-    const user = await User.create(body)
+    
+    //create user
+    const user = new User({
+        username: req.body.username,
+        firstName: req.body.firstName,
+        lastName: req.body.lastName,
+    });
+     
+    // create hashed password and add to user
+    var hashedPassword = await user.createHash(req.body.password);
+    user.password_Hash = hashedPassword;
+
+    // Save user object to database
+    await user.save();
+    
+    //  send response
     const token = jwt.sign({
         userId:user._id
     }, JWT_SECRET);
@@ -58,31 +73,23 @@ router.post("/signin", async(req,res) => {
         });
         return;
     }
-    await User.find({
-        username,
-        password
-    })
-    .then((value) =>{
-        if(value){
+
+    const user = await User.findOne({ username });
+    if(user) {
+        if( await user.validatePassword(password)) {
             const userId = jwt.sign({
                 username
             }, JWT_SECRET);
-            res.status(200).json({
+            return res.status(200).json({
                 message: "Signed in successfully",
                 userId
             })
-        } else {
-            res.status(200).json({
-                msg:" usename or password is incorrect."
-            })
         }
-    })
-    .catch((err) => {
-        console.log("caught, something went wrong.")
-        res.status(400).json({
-            msg:"something went wrong."
+    } else {
+        return res.status(200).json({
+            msg:" usename or password is incorrect."
         })
-    })
+    }
 })
 
 //  get users
