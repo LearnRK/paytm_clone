@@ -10,10 +10,14 @@ async function authMiddleware (req, res, next) {
     const token = req.headers.authorization.split(" ")[1];
     try {
         const decoded = jwt.verify(token, JWT_SECRET);
-        req.userId = (await User.findOne({ username : decoded.username}))._id;
-        next();
+        if( decoded.username) {
+            req.userId = (await User.findOne({ username : decoded.username}))._id;
+            next();
+        } else {
+            return res.status(403).json({ message: " invalid token."})
+        }
     } catch (err) {
-        return res.status(403).json({});
+        return res.status(403).json({ message: "some error occured."});
     }
 };
 

@@ -3,7 +3,7 @@ const zod = require("zod");
 const jwt = require("jsonwebtoken");
 const { JWT_SECRET } = require("../config");
 const router = express.Router();
-const { User } = require("../db");
+const { User, Account } = require("../db");
 const { authMiddleware } = require("./middleware/authMiddleware");
 
 //create a zod schema
@@ -32,7 +32,7 @@ router.post("/signup",async (req, res) => {
     });
     if(userExist){
         console.log("username already present in db.")
-        res.json({
+        return res.json({
             msg:"username not awailable, try a different one."
         })
     }    
@@ -52,6 +52,13 @@ router.post("/signup",async (req, res) => {
     // Save user object to database
     await user.save();
     
+    // create account of user
+    await Account.create({
+        userId: user._id,
+        balance: parseInt(1+ Math.random()*10000)
+
+    })
+
     //  send response
     const token = jwt.sign({
         userId:user._id
@@ -93,30 +100,33 @@ router.post("/signin", async(req,res) => {
 })
 
 //  get users
-router.get("/bulk",async (req, res) => {
-    const filter = req.query.filter;
-    if(!filter) {
-        console.log((await User.find()).map( (tuple) => { return tuple.username}));
-        const allUsers = (await User.find()).map( (tuple) => { return tuple.firstName});
-        res.json({  allUsers });
-        return;
-    }
-    const user = await User.findOne({
-        username: filter
+router.get("/bulk", async (req, res) => {
+    const filter = req.query.filter || "";
+
+    const users = await User.find({
+        $or: [{
+            firstName: {
+                "$regex": filter
+            }
+        }, {
+            lastName: {
+                "$regex": filter
+            }
+        }, {
+            username: {
+                "$regex": filter
+            }
+        }]
     })
-    if(user){
-        res.json({
-            message: "Found user successfully.",
+
+    res.json({
+        user: users.map(user => ({
+            username: user.username,
             firstName: user.firstName,
             lastName: user.lastName,
             _id: user._id
-        })
-    } else {
-        res.json({
-            message : "user not found."
-        })
-    }
-
+        }))
+    })
 })
 
 // validate update values
